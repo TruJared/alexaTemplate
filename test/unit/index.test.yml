@@ -1,0 +1,138 @@
+#=====================================================================================================================
+#     ______    _ ____  ______        __  _
+#    / __/ /__ (_) / / /_  __/__ ___ / /_(_)__  ___ _
+#   _\ \/  '_// / / /   / / / -_|_-</ __/ / _ \/ _ `/
+#  /___/_/\_\/_/_/_/   /_/  \__/___/\__/_/_//_/\_, /
+#                                             /___/
+#
+# Created by Bespoken
+# Learn more at https://read.bespoken.io/unit-testing/getting-started/
+# Pro Level: https://read.bespoken.io/unit-testing/guide/#further-reading
+# Good example: https://github.com/ig-perez/skill-sample-nodejs-highlowgame/blob/ContinuousIntegration/test/unit/index.test.yml
+
+#=====================================================================================================================
+# ! testing.json -> jest.silent: false to turn on verbose console.log() ! #
+
+# * shorthand * #
+# cardContent - Corresponds to response.card.content
+# cardImageURL - Corresponds to response.card.image.largeImageUrl
+# cardTitle - Corresponds to response.card.title
+# prompt - Grabs either the text or ssml from response.outputSpeech, whichever one is set
+# reprompt - Grabs either the text or ssml from response.reprompt.outputSpeech, whichever one is set
+# sessionEnded - Corresponds to response.shouldEndSession
+
+---
+configuration:
+  locale: en-US
+  dynamo: mock
+  userId: 000000
+
+# basic sample
+---
+- test: Launch request, no further interaction.
+- LaunchRequest: # LaunchRequest is not an utterance but a request type and reserved word
+    - sessionAttributes.passTo: 'HelloWorldIntentHandler'
+    - prompt: '*' #wildcard
+    - reprompt: '*'
+    - response.card.type: Simple
+    - response.card.title: '*'
+    - response.card.content: '*'
+
+---
+- test: Launch, exit, launch should change prompt
+- LaunchRequest:
+    - prompt: Would you like me to say "hello world"?
+- AMAZON.CancelIntent
+- LaunchRequest
+  - prompt!= Would you like me to say "hello world"?
+- AMAZON.YesIntent:
+    - prompt: Hello World
+
+# test simple invoke
+---
+- test: Hello World, user launches but then request hello world
+- LaunchRequest:
+- HelloWorldIntent:
+    - prompt: Hello World
+
+# multiple intents in one block
+---
+- test: Get help, direct call and exit.
+- LaunchRequest: # we know this works from above
+- AMAZON.HelpIntent:
+    - prompt: I sent a sample card to your device. Say "exit" to quit, or "hello world" to hear me say "hello world".
+    - reprompt: I sent a sample card to your device. Say "exit" to quit, or "hello world" to hear me say "hello world".
+    - response.card.type: Simple
+    - response.card.title: '*'
+    - response.card.content: '*'
+- AMAZON.CancelIntent: # This is equivalent to say 'exit'
+    - response.outputSpeech: ''
+
+# Is session data being saved and passed to repeat?
+---
+- test: Help me, and I didn't hear you.
+- LaunchRequest:
+- AMAZON.HelpIntent: # we know this works from above
+    - sessionAttributes.repeatText: I sent a sample card to your device. Say "exit" to quit, or "hello world" to hear me say "hello world".
+- AMAZON.RepeatIntent:
+    - prompt: I sent a sample card to your device. Say "exit" to quit, or "hello world" to hear me say "hello world". # should be help responses
+
+# fallback should trigger a response but session should stay open
+---
+- test: AMAZON.FallbackIntent
+- LaunchRequest
+- AMAZON.FallbackIntent:
+    - prompt:
+        - '<say-as interpret-as="interjection">Aw man</say-as>, I didn’t understand that request. Perhaps try phrasing it a different way.'
+        - '<say-as interpret-as="interjection">Blah</say-as> , I’m afraid I didn’t understand that. Can you try saying it differently?'
+        - '<say-as interpret-as="interjection">Blarg</say-as> , I didn’t quite catch that, say again?'
+        - '<say-as interpret-as="interjection">Blast</say-as> , I was totally spacing out and didn’t hear that. Can you repeat the request?'
+        - '<say-as interpret-as="interjection">Darn</say-as> , Totally missed that one. What did you ask me?'
+        - '<say-as interpret-as="interjection">D’oh</say-as> , Too busy dreaming about donuts, can you repeat that request?'
+        - '<say-as interpret-as="interjection">Good grief</say-as> , I have no idea what you’re asking. Let’s try this again.'
+        - '<say-as interpret-as="interjection">Jeepers creepers</say-as> , You scared me!   What were we doing?'
+        - '<say-as interpret-as="interjection">le sigh</say-as> , I know it’s frustrating when I don’t understand. Let’s see if we can’t get you the information you need.'
+        - '<say-as interpret-as="interjection">ruh roh</say-as> , I didn’t really understand that. Maybe we can try something else?'
+    - reprompt: '*' # reprompt is equivalent to response.reprompt.outputSpeech.ssml
+
+---
+- test: Launch, then say yes and no -> test passTo.
+- LaunchRequest:
+    - sessionAttributes.passTo: 'HelloWorldIntentHandler'
+- AMAZON.YesIntent:
+    - sessionAttributes.passTo: false
+    - prompt: Hello World
+- LaunchRequest:
+- AMAZON.NoIntent:
+    - sessionAttributes.passTo: 'HelloWorldIntentHandler'
+
+---
+- test: Get help, then say yes and no -> should get fallback
+- LaunchRequest
+- AMAZON.HelpIntent:
+    - sessionAttributes.passTo: false
+- AMAZON.YesIntent:
+    - sessionEnded: false
+- AMAZON.CancelIntent
+- LaunchRequest
+- AMAZON.HelpIntent:
+    - sessionAttributes.passTo: false
+- AMAZON.NoIntent:
+    - sessionEnded: false
+- AMAZON.CancelIntent
+
+---
+- test: AMAZON.StopIntent
+- LaunchRequest
+- AMAZON.StopIntent
+
+---
+- test: AMAZON.CancelIntent
+- LaunchRequest
+- AMAZON.CancelIntent
+
+---
+- test: Does reset work?
+- LaunchRequest
+- ResetIntent:
+    - sessionAttributes.testReset: undefined
