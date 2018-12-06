@@ -1,7 +1,7 @@
 {
   "interactionModel": {
     "languageModel": {
-      "invocationName": "voice focused template",
+      "invocationName": "my alexa template",
       "intents": [
         {
           "name": "AMAZON.FallbackIntent",

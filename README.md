@@ -1,10 +1,10 @@
-# Custom Template For Voice Focused
+# Custom Template For Alexa
 
-Custom template for voice focused.
+Custom template for Alexa.
 
 I have `eslint eslint-plugin-prettier eslint-config-prettier prettier` installed globally though `npm insall -g ...`, not sure if 100% required to be global.
 
-## Scripts & Snippets
+## What's In the Box 😱
 
 ### How to use in VS code
 
@@ -53,4 +53,6 @@ may not be regularly updated ☹️
 
 https://raw.githubusercontent.com/wesbos/dotfiles/master/.eslintrc
 
-## About sessionAttributes.passTo
+### About sessionAttributes.passTo
+
+I use `sessionAttributes.passTo` to represent the name of the handler I'm going to have the Yes or No intent hand off the response to. I think it keeps things a bit more clean. I suppose one could also use dialogue, but I have a hard time with that.
