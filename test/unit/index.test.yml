@@ -32,8 +32,8 @@ configuration:
 - test: Launch request, no further interaction.
 - LaunchRequest: # LaunchRequest is not an utterance but a request type and reserved word
     - sessionAttributes.passTo: 'HelloWorldIntentHandler'
-    - prompt: '*' #wildcard
-    - reprompt: '*'
+    - prompt: Would you like me to say "hello world"?
+    - reprompt: Would you like me to say "hello world"?
     - response.card.type: Simple
     - response.card.title: '*'
     - response.card.content: '*'
@@ -136,3 +136,4 @@ configuration:
 - LaunchRequest
 - ResetIntent:
     - sessionAttributes.testReset: undefined
+    - prompt: 'Would you like me to say "hello world"?'

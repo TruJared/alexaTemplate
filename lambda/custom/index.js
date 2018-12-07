@@ -4,7 +4,6 @@ const constants = require('./constants');
 const functions = require('./functions');
 
 const { responses } = constants;
-
 const LaunchRequestHandler = {
   canHandle(handlerInput) {
     return handlerInput.requestEnvelope.request.type === 'LaunchRequest';
@@ -54,6 +53,7 @@ const HelloWorldIntentHandler = {
     sessionAttributes.passTo = 'false';
 
     attributesManager.setPersistentAttributes(sessionAttributes);
+    await attributesManager.savePersistentAttributes();
     return responseBuilder.speak(speechText).getResponse();
   },
 };
@@ -127,9 +127,9 @@ const NoIntentHandler = {
     if (sessionAttributes.passTo) {
       switch (sessionAttributes.passTo) {
         case 'HelloWorldIntentHandler':
-          return responseBuilder.speak(
-            functions.shuffle(constants.phrasePool.valediction)[0]
-          );
+          return responseBuilder
+            .speak(functions.shuffle(constants.phrasePool.valediction)[0])
+            .getResponse();
         default:
           throw new Error(
             `In no intent switch. Most likely this error is because of an invalid 'passTo' value >>> sessionAttributes.passTo = ${
@@ -173,7 +173,7 @@ const ResetIntentHandler = {
     );
   },
   async handle(handlerInput) {
-    const { attributesManager } = handlerInput;
+    const { attributesManager, responseBuilder } = handlerInput;
     const sessionAttributes = attributesManager.getSessionAttributes();
     sessionAttributes.testReset = true; // this line is just for running tests
     attributesManager.setSessionAttributes({});
@@ -181,7 +181,7 @@ const ResetIntentHandler = {
       constants.persistentAttributesAtStart
     );
     await attributesManager.savePersistentAttributes();
-    return LaunchRequestHandler.handle(handlerInput);
+    return responseBuilder.speak('Skill is reset. Good-bye').getResponse();
   },
 };
 
@@ -194,11 +194,9 @@ const FallBackHandler = {
     );
   },
   async handle(handlerInput) {
-    const { attributesManager, responseBuilder } = handlerInput;
-    const sessionAttributes = attributesManager.getSessionAttributes();
+    const { responseBuilder } = handlerInput;
     const speechText = functions.shuffle(constants.phrasePool.fallback)[0];
     const repromptText = speechText;
-    sessionAttributes.passTo = false;
 
     return responseBuilder
       .speak(speechText)
@@ -224,7 +222,9 @@ const CancelAndStopIntentHandler = {
     await attributesManager.savePersistentAttributes();
 
     console.log('user stopped, or canceled some request');
-    return responseBuilder.speak('').getResponse();
+    return responseBuilder
+      .speak(functions.shuffle(constants.phrasePool.valediction)[0])
+      .getResponse();
   },
 };
 
@@ -250,7 +250,8 @@ const ErrorHandler = {
     const sessionAttributes = attributesManager.getSessionAttributes();
     console.log(`Error handled: ${error}`);
     console.log(`handlerInput: ${JSON.stringify(handlerInput)}`);
-    const speechText = functions.shuffle(constants.phrasePool.fallback)[0];
+    const speechText =
+      'There appears to be something wrong. Please try again in a few moments';
 
     attributesManager.setPersistentAttributes(sessionAttributes);
     await attributesManager.savePersistentAttributes();
