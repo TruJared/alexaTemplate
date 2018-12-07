@@ -55,9 +55,7 @@ I hope to keep adding things for the shuffle responses. Variety is the spice of 
 
 ### .eslintrc.js
 
-- I just used Wes Bos's because he makes cool stickers
-
-https://raw.githubusercontent.com/wesbos/dotfiles/master/.eslintrc
+- Thanks [Wes Bos](https://raw.githubusercontent.com/wesbos/dotfiles/master/.eslintrc)
 
 ### About sessionAttributes.passTo
 
@@ -109,4 +107,6 @@ const responses = {
 ...
 ```
 
-Thanks! Hopefully someone will find this useful!
+### Thanks
+
+Hope you find this useful 👍
