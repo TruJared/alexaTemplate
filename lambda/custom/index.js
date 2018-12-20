@@ -275,6 +275,15 @@ const SystemExceptionHandler = {
   },
 };
 
+// a little extra info in the logs //
+const LogJsonRequestInterceptor = {
+  async process(handlerInput) {
+    console.log(
+      `REQUEST ENVELOPE = ${JSON.stringify(handlerInput.requestEnvelope)}`
+    );
+  },
+};
+
 const skillBuilder = Alexa.SkillBuilders.standard();
 exports.handler = skillBuilder
   .addRequestHandlers(
@@ -293,4 +302,5 @@ exports.handler = skillBuilder
   .addErrorHandlers(ErrorHandler)
   .withTableName(constants.skill.dynamoDBTableName)
   .withAutoCreateTable(true)
+  .addRequestInterceptors(LogJsonRequestInterceptor)
   .lambda();
