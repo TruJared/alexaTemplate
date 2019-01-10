@@ -53,7 +53,7 @@ I hope to keep adding things for the shuffle responses. Variety is the spice of 
 
 ----> may not be regularly updated ☹️
 
-### .eslintrc.js
+### .eslintrc.json
 
 - Thanks [Wes Bos](https://raw.githubusercontent.com/wesbos/dotfiles/master/.eslintrc)
 
